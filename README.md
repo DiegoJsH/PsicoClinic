@@ -24,3 +24,5 @@ En producción, cambiar en api-service.js:
 ```javascript
 const API_BASE_URL = 'https://tu-backend-url.com';
 ```
+
+1 commit prueba 
