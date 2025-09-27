@@ -4,14 +4,34 @@ const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
 // API Service simplificado para Pacientes
 class PacienteService {
     static async request(url, options = {}) {
-        const response = await fetch(`${API_BASE_URL}${url}`, {
-            headers: { 'Content-Type': 'application/json' },
-            ...options
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.headers.get('content-type')?.includes('json') 
-            ? response.json() 
-            : response.text();
+        try {
+            console.log('Haciendo petición a:', `${API_BASE_URL}${url}`);
+            const response = await fetch(`${API_BASE_URL}${url}`, {
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                ...options
+            });
+            
+            console.log('Respuesta recibida:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error del servidor:', errorText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const contentType = response.headers.get('content-type');
+            console.log('Content-Type:', contentType);
+            
+            return contentType?.includes('json') 
+                ? response.json() 
+                : response.text();
+        } catch (error) {
+            console.error('Error en request:', error);
+            throw error;
+        }
     }
 
     static getAllPacientes() { return this.request('/pacientes'); }
@@ -45,13 +65,19 @@ const calcularNuevosEsteMes = (pacientes) => {
 
 // Función principal de carga
 async function loadPacientes() {
+    console.log('Iniciando carga de pacientes...');
     try {
         const pacientes = await PacienteService.getAllPacientes();
+        console.log('Pacientes recibidos:', pacientes);
+        console.log('Número de pacientes:', pacientes.length);
+        
         displayPacientes(pacientes);
         updateEstadisticas(pacientes);
+        console.log('Pacientes cargados exitosamente');
     } catch (error) {
-        console.error('Error:', error);
-        alert('Error al cargar pacientes. Verifique la conexión al servidor.');
+        console.error('Error completo:', error);
+        console.error('Stack trace:', error.stack);
+        alert(`Error al cargar pacientes: ${error.message}`);
     }
 }
 
