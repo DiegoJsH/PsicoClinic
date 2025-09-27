@@ -1,4 +1,4 @@
-// API Configuration
+// API Configuration + render
 const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
 
 // API Service simplificado para Pacientes
