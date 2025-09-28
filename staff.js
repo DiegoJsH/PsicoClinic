@@ -1,17 +1,37 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
 
 // API Service para Personal
 class PersonalService {
     static async request(url, options = {}) {
-        const response = await fetch(`${API_BASE_URL}${url}`, {
-            headers: { 'Content-Type': 'application/json' },
-            ...options
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.headers.get('content-type')?.includes('json') 
-            ? response.json() 
-            : response.text();
+        try {
+            console.log('Haciendo petición a:', `${API_BASE_URL}${url}`);
+            const response = await fetch(`${API_BASE_URL}${url}`, {
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                ...options
+            });
+            
+            console.log('Respuesta recibida:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error del servidor:', errorText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const contentType = response.headers.get('content-type');
+            console.log('Content-Type:', contentType);
+            
+            return contentType?.includes('json') 
+                ? response.json() 
+                : response.text();
+        } catch (error) {
+            console.error('Error en request:', error);
+            throw error;
+        }
     }
 
     static getAllPersonal() { return this.request('/personal'); }
@@ -38,13 +58,19 @@ const calcularNuevosEsteMes = (personalList) => {
 
 // Función principal de carga
 async function loadPersonal() {
+    console.log('Iniciando carga de personal...');
     try {
         const personalList = await PersonalService.getAllPersonal();
+        console.log('Personal recibido:', personalList);
+        console.log('Número de personal:', personalList.length);
+        
         displayPersonal(personalList);
         updateEstadisticasPersonal(personalList);
+        console.log('Personal cargado exitosamente');
     } catch (error) {
-        console.error('Error:', error);
-        alert('Error al cargar personal. Verifique la conexión al servidor.');
+        console.error('Error completo:', error);
+        console.error('Stack trace:', error.stack);
+        alert(`Error al cargar personal: ${error.message}`);
     }
 }
 
