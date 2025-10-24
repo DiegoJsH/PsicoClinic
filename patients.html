@@ -226,8 +226,71 @@
         </div>
     </div>
 
+    <!-- Modal Editar Paciente -->
+    <div class="modal fade" id="editPatientModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <input type="hidden" id="editPatientId">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editFirstName" class="form-label">Nombre</label>
+                                    <input type="text" class="form-control" id="editFirstName"
+                                        placeholder="Ingrese el nombre">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editLastName" class="form-label">Apellido</label>
+                                    <input type="text" class="form-control" id="editLastName"
+                                        placeholder="Ingrese el apellido">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editBirthDate" class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" class="form-control" id="editBirthDate">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editGender" class="form-label">Género</label>
+                                    <select class="form-select" id="editGender">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Femenino">Femenino</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPhone" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="editPhone" placeholder="987 654 321">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail" placeholder="ejemplo@email.com">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary-custom" onclick="guardarEdicionPaciente()">Actualizar Paciente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="api-service.js"></script>
+    <script src="patients-service.js"></script>
     <script src="script.js"></script>
     <script>
         checkAuth();

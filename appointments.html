@@ -76,7 +76,7 @@
                         <button type="button" class="btn btn-primary-custom me-2" data-bs-toggle="modal" data-bs-target="#newAppointmentModal">
                             <i class="bi bi-plus-circle"></i> Nueva Cita
                         </button>
-                        <button type="button" class="btn btn-outline-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#filterModal">
                             <i class="bi bi-filter"></i> Filtrar
                         </button>
                     </div>
@@ -86,7 +86,7 @@
                     <div class="col-md-3">
                         <div class="card text-center">
                             <div class="card-body">
-                                <h5 class="card-title text-primary-custom">24</h5>
+                                <h5 class="card-title text-primary-custom" id="citasHoy">0</h5>
                                 <p class="card-text">Citas Hoy</p>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
                     <div class="col-md-3">
                         <div class="card text-center">
                             <div class="card-body">
-                                <h5 class="card-title text-success">18</h5>
+                                <h5 class="card-title text-success" id="citasCompletadas">0</h5>
                                 <p class="card-text">Completadas</p>
                             </div>
                         </div>
@@ -102,7 +102,7 @@
                     <div class="col-md-3">
                         <div class="card text-center">
                             <div class="card-body">
-                                <h5 class="card-title text-warning">4</h5>
+                                <h5 class="card-title text-warning" id="citasPendientes">0</h5>
                                 <p class="card-text">Pendientes</p>
                             </div>
                         </div>
@@ -110,7 +110,7 @@
                     <div class="col-md-3">
                         <div class="card text-center">
                             <div class="card-body">
-                                <h5 class="card-title text-danger">2</h5>
+                                <h5 class="card-title text-danger" id="citasCanceladas">0</h5>
                                 <p class="card-text">Canceladas</p>
                             </div>
                         </div>
@@ -125,8 +125,8 @@
                             </div>
                             <div class="col-auto">
                                 <div class="input-group input-group-sm">
-                                    <input type="text" class="form-control" placeholder="Buscar citas...">
-                                    <button class="btn btn-outline-secondary" type="button">
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Buscar citas..." onkeyup="buscarCitas()">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="buscarCitas()">
                                         <i class="bi bi-search"></i>
                                     </button>
                                 </div>
@@ -146,99 +146,9 @@
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="citasTableBody">
                                     <tr>
-                                        <td>
-                                            <div class="fw-semibold">Hoy, 09:00 AM</div>
-                                            <small class="text-muted">14 Feb 2025</small>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar me-2">MG</div>
-                                                <div>
-                                                    <div class="fw-semibold">María González</div>
-                                                    <small class="text-muted">31 años</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Dr. Rodríguez</td>
-                                        <td>Terapia Individual</td>
-                                        <td><span class="badge bg-success">Completada</span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-outline-primary" title="Ver detalles">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-secondary" title="Editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-danger" title="Cancelar">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="fw-semibold">Hoy, 10:30 AM</div>
-                                            <small class="text-muted">14 Feb 2025</small>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar me-2">CM</div>
-                                                <div>
-                                                    <div class="fw-semibold">Carlos Martínez</div>
-                                                    <small class="text-muted">45 años</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Dra. López</td>
-                                        <td>Evaluación Inicial</td>
-                                        <td><span class="badge bg-warning">Pendiente</span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-outline-primary" title="Ver detalles">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-secondary" title="Editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-danger" title="Cancelar">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <div class="fw-semibold">Hoy, 02:00 PM</div>
-                                            <small class="text-muted">14 Feb 2025</small>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar me-2">AP</div>
-                                                <div>
-                                                    <div class="fw-semibold">Ana Pérez</div>
-                                                    <small class="text-muted">28 años</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>Dr. Silva</td>
-                                        <td>Terapia Familiar</td>
-                                        <td><span class="badge bg-primary">Programada</span></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button type="button" class="btn btn-outline-primary" title="Ver detalles">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-secondary" title="Editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-danger" title="Cancelar">
-                                                    <i class="bi bi-x-circle"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+                                        <td colspan="6" class="text-center">Cargando citas...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -279,10 +189,7 @@
                                 <div class="mb-3">
                                     <label for="patientSelect" class="form-label">Paciente</label>
                                     <select class="form-select" id="patientSelect">
-                                        <option value="">Seleccionar paciente...</option>
-                                        <option value="1">María González</option>
-                                        <option value="2">Carlos Martínez</option>
-                                        <option value="3">Ana Pérez</option>
+                                        <option value="">Cargando pacientes...</option>
                                     </select>
                                 </div>
                             </div>
@@ -290,10 +197,7 @@
                                 <div class="mb-3">
                                     <label for="doctorSelect" class="form-label">Especialista</label>
                                     <select class="form-select" id="doctorSelect">
-                                        <option value="">Seleccionar especialista...</option>
-                                        <option value="1">Dr. Rodríguez</option>
-                                        <option value="2">Dra. López</option>
-                                        <option value="3">Dr. Silva</option>
+                                        <option value="">Cargando especialistas...</option>
                                     </select>
                                 </div>
                             </div>
@@ -318,8 +222,8 @@
                                 <option value="">Seleccionar tipo...</option>
                                 <option value="individual">Terapia Individual</option>
                                 <option value="familiar">Terapia Familiar</option>
-                                <option value="evaluation">Evaluación Inicial</option>
-                                <option value="followup">Seguimiento</option>
+                                <option value="evaluacion">Evaluación Inicial</option>
+                                <option value="seguimiento">Seguimiento</option>
                             </select>
                         </div>
                         <div class="mb-3">
@@ -330,13 +234,59 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary-custom">Agendar Cita</button>
+                    <button type="button" class="btn btn-primary-custom" onclick="guardarNuevaCita()">Agendar Cita</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Filtros -->
+    <div class="modal fade" id="filterModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-funnel"></i> Filtros de Búsqueda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="estadoFilterModal" class="form-label">Estado</label>
+                        <select class="form-select" id="estadoFilterModal">
+                            <option value="todos">Todos los estados</option>
+                            <option value="Programada">Programada</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Confirmada">Confirmada</option>
+                            <option value="Completada">Completada</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fechaFilterModal" class="form-label">Fecha</label>
+                        <input type="date" class="form-control" id="fechaFilterModal">
+                    </div>
+                    <div class="mb-3">
+                        <label for="pacienteFilterModal" class="form-label">ID Paciente</label>
+                        <input type="number" class="form-control" id="pacienteFilterModal" placeholder="Ej: 1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="especialistaFilterModal" class="form-label">ID Especialista</label>
+                        <input type="number" class="form-control" id="especialistaFilterModal" placeholder="Ej: 1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="limpiarFiltrosModal()">
+                        <i class="bi bi-x-circle"></i> Limpiar
+                    </button>
+                    <button type="button" class="btn btn-primary-custom" onclick="aplicarFiltrosModal()">
+                        <i class="bi bi-check-circle"></i> Aplicar Filtros
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="appointments-service.js"></script>
     <script src="script.js"></script>
     <script>
         checkAuth();

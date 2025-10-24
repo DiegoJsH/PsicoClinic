@@ -1,33 +1,20 @@
-// API Configuration + render
+// API Configuration
+//const API_BASE_URL = 'http://localhost:8080';
 const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
 
 // API Service para Personal
 class PersonalService {
     static async request(url, options = {}) {
         try {
-            console.log('Haciendo petición a:', `${API_BASE_URL}${url}`);
             const response = await fetch(`${API_BASE_URL}${url}`, {
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 ...options
             });
             
-            console.log('Respuesta recibida:', response.status, response.statusText);
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (response.status === 204 || !response.headers.get('content-type')) return null;
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Error del servidor:', errorText);
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const contentType = response.headers.get('content-type');
-            console.log('Content-Type:', contentType);
-            
-            return contentType?.includes('json') 
-                ? response.json() 
-                : response.text();
+            return response.headers.get('content-type')?.includes('json') ? response.json() : response.text();
         } catch (error) {
             console.error('Error en request:', error);
             throw error;
@@ -39,37 +26,28 @@ class PersonalService {
     static createPersonal(data) { return this.request('/personal', { method: 'POST', body: JSON.stringify(data) }); }
     static updatePersonal(id, data) { return this.request(`/personal/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
     static deletePersonal(id) { return this.request(`/personal/${id}`, { method: 'DELETE' }); }
-    static searchPersonalByNombre(nombre) { 
-        return this.request(`/personal/query?nombre=${encodeURIComponent(nombre)}`); 
-    }
+    static searchPersonalByNombre(nombre) { return this.request(`/personal/query?nombre=${encodeURIComponent(nombre)}`); }
 }
 
 // Utilidades
 const iniciales = (p) => (p.nombre?.[0] || '') + (p.apellido?.[0] || '');
 
-// Calcular cuántos nuevos personal ingresaron este mes
 const calcularNuevosEsteMes = (personalList) => {
     const hoy = new Date();
     return personalList.filter(p => {
-        const fecha = new Date(p.fechaCreacion || Date.now()); // si no tienes fechaCreacion, ajusta
+        const fecha = new Date(p.fechaCreacion || Date.now());
         return fecha.getMonth() === hoy.getMonth() && fecha.getFullYear() === hoy.getFullYear();
     }).length;
 };
 
-// Función principal de carga
+// Cargar personal
 async function loadPersonal() {
-    console.log('Iniciando carga de personal...');
     try {
         const personalList = await PersonalService.getAllPersonal();
-        console.log('Personal recibido:', personalList);
-        console.log('Número de personal:', personalList.length);
-        
         displayPersonal(personalList);
         updateEstadisticasPersonal(personalList);
-        console.log('Personal cargado exitosamente');
     } catch (error) {
-        console.error('Error completo:', error);
-        console.error('Stack trace:', error.stack);
+        console.error('Error al cargar personal:', error);
         alert(`Error al cargar personal: ${error.message}`);
     }
 }
@@ -120,10 +98,11 @@ async function deletePersonalById(id) {
     if (!confirm('¿Eliminar este personal?')) return;
     try {
         await PersonalService.deletePersonal(id);
-        alert('Personal eliminado');
-        loadPersonal();
+        await loadPersonal();
+        alert('Personal eliminado exitosamente');
     } catch (error) {
-        alert('Error al eliminar');
+        console.error('Error al eliminar personal:', error);
+        alert('Error al eliminar personal: ' + error.message);
     }
 }
 
@@ -163,9 +142,55 @@ async function guardarNuevoPersonal() {
     }
 }
 
-// Editar personal (placeholder)
-function editPersonal(id) {
-    alert(`Editar personal ${id} - No implementado aún`);
+// Editar personal
+async function editPersonal(id) {
+    try {
+        const personal = await PersonalService.getPersonalById(id);
+        
+        document.getElementById('editStaffId').value = personal.id;
+        document.getElementById('editStaffFirstName').value = personal.nombre || '';
+        document.getElementById('editStaffLastName').value = personal.apellido || '';
+        document.getElementById('editStaffGenero').value = personal.genero || '';
+        document.getElementById('editStaffDni').value = personal.numeroDni || '';
+        document.getElementById('editStaffEmail').value = personal.email || '';
+        document.getElementById('editStaffPhone').value = personal.telefono || '';
+        document.getElementById('editStaffEspecialidad').value = personal.especialidad || '';
+        document.getElementById('editStaffLicencia').value = personal.numeroLicencia || '';
+        document.getElementById('editStaffLugarEstudio').value = personal.lugarEstudio || '';
+        
+        new bootstrap.Modal(document.getElementById('editStaffModal')).show();
+    } catch (error) {
+        console.error('Error al cargar personal:', error);
+        alert('Error al cargar los datos del personal: ' + error.message);
+    }
+}
+
+// Guardar edición
+async function guardarEdicionPersonal() {
+    try {
+        const id = document.getElementById('editStaffId').value;
+        const personal = {
+            nombre: document.getElementById('editStaffFirstName').value,
+            apellido: document.getElementById('editStaffLastName').value,
+            numeroDni: document.getElementById('editStaffDni').value,
+            email: document.getElementById('editStaffEmail').value,
+            telefono: document.getElementById('editStaffPhone').value,
+            especialidad: document.getElementById('editStaffEspecialidad').value,
+            genero: document.getElementById('editStaffGenero').value,
+            numeroLicencia: document.getElementById('editStaffLicencia').value,
+            lugarEstudio: document.getElementById('editStaffLugarEstudio').value
+        };
+
+        if (!personal.nombre || !personal.apellido) return alert('Nombre y apellido son requeridos');
+
+        await PersonalService.updatePersonal(id, personal);
+        bootstrap.Modal.getInstance(document.getElementById('editStaffModal')).hide();
+        await loadPersonal();
+        alert('Personal actualizado exitosamente');
+    } catch (error) {
+        console.error('Error al actualizar personal:', error);
+        alert('Error al actualizar personal: ' + error.message);
+    }
 }
 
 // Búsqueda con debounce

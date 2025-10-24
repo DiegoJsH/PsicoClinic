@@ -1,33 +1,20 @@
-// API Configuration + render
+// API Configuration
+//const API_BASE_URL = 'http://localhost:8080';
 const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
 
-// API Service simplificado para Pacientes
+// API Service para Pacientes
 class PacienteService {
     static async request(url, options = {}) {
         try {
-            console.log('Haciendo petición a:', `${API_BASE_URL}${url}`);
             const response = await fetch(`${API_BASE_URL}${url}`, {
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 ...options
             });
             
-            console.log('Respuesta recibida:', response.status, response.statusText);
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            if (response.status === 204 || !response.headers.get('content-type')) return null;
             
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Error del servidor:', errorText);
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const contentType = response.headers.get('content-type');
-            console.log('Content-Type:', contentType);
-            
-            return contentType?.includes('json') 
-                ? response.json() 
-                : response.text();
+            return response.headers.get('content-type')?.includes('json') ? response.json() : response.text();
         } catch (error) {
             console.error('Error en request:', error);
             throw error;
@@ -45,8 +32,7 @@ class PacienteService {
 // Utilidades
 const calcularEdad = (fecha) => {
     if (!fecha) return 'N/A';
-    const hoy = new Date();
-    const nacimiento = new Date(fecha);
+    const hoy = new Date(), nacimiento = new Date(fecha);
     let edad = hoy.getFullYear() - nacimiento.getFullYear();
     const mes = hoy.getMonth() - nacimiento.getMonth();
     if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
@@ -63,20 +49,14 @@ const calcularNuevosEsteMes = (pacientes) => {
     }).length;
 };
 
-// Función principal de carga
+// Cargar pacientes
 async function loadPacientes() {
-    console.log('Iniciando carga de pacientes...');
     try {
         const pacientes = await PacienteService.getAllPacientes();
-        console.log('Pacientes recibidos:', pacientes);
-        console.log('Número de pacientes:', pacientes.length);
-        
         displayPacientes(pacientes);
         updateEstadisticas(pacientes);
-        console.log('Pacientes cargados exitosamente');
     } catch (error) {
-        console.error('Error completo:', error);
-        console.error('Stack trace:', error.stack);
+        console.error('Error al cargar pacientes:', error);
         alert(`Error al cargar pacientes: ${error.message}`);
     }
 }
@@ -127,13 +107,14 @@ function displayPacientes(pacientes) {
 
 // Eliminar paciente
 async function deletePacienteById(id) {
-    if (!confirm('¿Eliminar este paciente?')) return;
+    if (!confirm('¿Está seguro de eliminar este paciente?')) return;
     try {
         await PacienteService.deletePaciente(id);
-        alert('Paciente eliminado');
-        loadPacientes();
+        await loadPacientes();
+        alert('Paciente eliminado exitosamente');
     } catch (error) {
-        alert('Error al eliminar');
+        console.error('Error al eliminar paciente:', error);
+        alert('Error al eliminar paciente: ' + error.message);
     }
 }
 
@@ -149,13 +130,10 @@ async function guardarNuevoPaciente() {
             email: document.getElementById('email').value
         };
 
-        if (!paciente.nombre || !paciente.apellido) {
-            return alert('Nombre y apellido son requeridos');
-        }
+        if (!paciente.nombre || !paciente.apellido) return alert('Nombre y apellido son requeridos');
 
         await PacienteService.createPaciente(paciente);
         
-        // Cerrar modal y limpiar
         bootstrap.Modal.getInstance(document.getElementById('newPatientModal')).hide();
         ['firstName', 'lastName', 'birthDate', 'gender', 'phone', 'email']
             .forEach(id => document.getElementById(id).value = '');
@@ -167,9 +145,52 @@ async function guardarNuevoPaciente() {
     }
 }
 
-// Editar paciente (placeholder)
-function editPaciente(id) {
-    alert(`Editar paciente ${id} - No implementado`);
+// Editar paciente
+async function editPaciente(id) {
+    try {
+        const paciente = await PacienteService.getPacienteById(id);
+        
+        // Formatear fecha (YYYY-MM-DD)
+        const fechaFormateada = paciente.fechaNacimiento ? paciente.fechaNacimiento.split('T')[0] : '';
+        
+        document.getElementById('editPatientId').value = paciente.id;
+        document.getElementById('editFirstName').value = paciente.nombre || '';
+        document.getElementById('editLastName').value = paciente.apellido || '';
+        document.getElementById('editBirthDate').value = fechaFormateada;
+        document.getElementById('editGender').value = paciente.genero || '';
+        document.getElementById('editPhone').value = paciente.telefono || '';
+        document.getElementById('editEmail').value = paciente.email || '';
+        
+        new bootstrap.Modal(document.getElementById('editPatientModal')).show();
+    } catch (error) {
+        console.error('Error al cargar paciente:', error);
+        alert('Error al cargar los datos del paciente: ' + error.message);
+    }
+}
+
+// Guardar edición
+async function guardarEdicionPaciente() {
+    try {
+        const id = document.getElementById('editPatientId').value;
+        const paciente = {
+            nombre: document.getElementById('editFirstName').value,
+            apellido: document.getElementById('editLastName').value,
+            fechaNacimiento: document.getElementById('editBirthDate').value,
+            genero: document.getElementById('editGender').value,
+            telefono: document.getElementById('editPhone').value,
+            email: document.getElementById('editEmail').value
+        };
+
+        if (!paciente.nombre || !paciente.apellido) return alert('Nombre y apellido son requeridos');
+
+        await PacienteService.updatePaciente(id, paciente);
+        bootstrap.Modal.getInstance(document.getElementById('editPatientModal')).hide();
+        await loadPacientes();
+        alert('Paciente actualizado exitosamente');
+    } catch (error) {
+        console.error('Error al actualizar paciente:', error);
+        alert('Error al actualizar paciente: ' + error.message);
+    }
 }
 
 // Búsqueda con debounce
