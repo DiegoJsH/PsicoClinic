@@ -120,7 +120,7 @@ async function loadCitas() {
 function updateEstadisticas(citas) {
     const stats = calcularEstadisticas(citas);
     
-    document.getElementById('citasHoy').textContent = stats.citasHoy;
+    document.getElementById("citasHoy").textContent = citas.length;
     document.getElementById('citasCompletadas').textContent = stats.completadas;
     document.getElementById('citasPendientes').textContent = stats.pendientes;
     document.getElementById('citasCanceladas').textContent = stats.canceladas;

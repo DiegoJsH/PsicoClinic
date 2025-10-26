@@ -1,5 +1,5 @@
 // API Configuration
-//const API_BASE_URL = 'http://localhost:8080';
+// const API_BASE_URL = 'http://localhost:8080';
 const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
 
 // API Service para Pacientes
@@ -10,11 +10,17 @@ class PacienteService {
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 ...options
             });
-            
+
             if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             if (response.status === 204 || !response.headers.get('content-type')) return null;
-            
-            return response.headers.get('content-type')?.includes('json') ? response.json() : response.text();
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            } else {
+                // Si el backend devuelve texto plano (por ejemplo, un String)
+                return { message: await response.text() };
+            }
         } catch (error) {
             console.error('Error en request:', error);
             throw error;
@@ -108,10 +114,15 @@ function displayPacientes(pacientes) {
 // Eliminar paciente
 async function deletePacienteById(id) {
     if (!confirm('¿Está seguro de eliminar este paciente?')) return;
+
     try {
-        await PacienteService.deletePaciente(id);
+        const response = await PacienteService.deletePaciente(id);
+
+        // Manejo flexible: si el backend devuelve texto o JSON
+        const mensaje = response?.message || 'Paciente eliminado exitosamente';
+        alert(mensaje);
+
         await loadPacientes();
-        alert('Paciente eliminado exitosamente');
     } catch (error) {
         console.error('Error al eliminar paciente:', error);
         alert('Error al eliminar paciente: ' + error.message);
@@ -150,7 +161,6 @@ async function editPaciente(id) {
     try {
         const paciente = await PacienteService.getPacienteById(id);
         
-        // Formatear fecha (YYYY-MM-DD)
         const fechaFormateada = paciente.fechaNacimiento ? paciente.fechaNacimiento.split('T')[0] : '';
         
         document.getElementById('editPatientId').value = paciente.id;
