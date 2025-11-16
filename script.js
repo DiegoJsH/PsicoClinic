@@ -1,7 +1,7 @@
 // Asegúrate de que tu backend esté corriendo en la URL y puerto correctos(HOST)
 //const API_BASE_URL = 'http://localhost:8080';
 // BACKEND ONLINE
-const URL_BASE = "https://springbootpsicoclinic.onrender.com";
+const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
 
 // ------------------------------------
 // 🔐 Authentication (JWT) — ARREGLADO
