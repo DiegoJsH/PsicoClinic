@@ -1,6 +1,7 @@
 // ===============================
 // CONFIGURACIÓN BASE
 // ===============================
+//const API_BASE_URL = 'http://localhost:8080';
 const URL_BASE = 'https://springbootpsicoclinic.onrender.com';
 
 // ===============================

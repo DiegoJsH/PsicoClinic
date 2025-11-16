@@ -1,26 +1,51 @@
 // API Configuration
-// const API_BASE_URL = 'http://localhost:8080';
-const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
+const API_BASE_URL = 'http://localhost:8080';
+//const API_BASE_URL = 'https://springbootpsicoclinic.onrender.com';
 
 // API Service para Pacientes
 class PacienteService {
     static async request(url, options = {}) {
+        const token = sessionStorage.getItem('jwtToken');
+
+        if (!token) {
+            alert('Sesión expirada. Inicia sesión nuevamente.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}` // <-- TOKEN JWT
+        };
+
         try {
             const response = await fetch(`${API_BASE_URL}${url}`, {
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                headers: headers,
                 ...options
             });
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            if (response.status === 204 || !response.headers.get('content-type')) return null;
-
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return await response.json();
-            } else {
-                // Si el backend devuelve texto plano (por ejemplo, un String)
-                return { message: await response.text() };
+            // --- Manejo de errores ---
+            if (response.status === 401 || response.status === 403) {
+                alert('Sesión expirada o token inválido. Por favor inicie sesión nuevamente.');
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+                return;
             }
+
+            if (!response.ok)
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+
+            // Si no tiene body
+            if (response.status === 204) return null;
+
+            // JSON o texto
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json'))
+                return await response.json();
+
+            return { message: await response.text() };
+
         } catch (error) {
             console.error('Error en request:', error);
             throw error;
@@ -29,10 +54,18 @@ class PacienteService {
 
     static getAllPacientes() { return this.request('/pacientes'); }
     static getPacienteById(id) { return this.request(`/pacientes/${id}`); }
-    static createPaciente(data) { return this.request('/pacientes', { method: 'POST', body: JSON.stringify(data) }); }
-    static updatePaciente(id, data) { return this.request(`/pacientes/${id}`, { method: 'PUT', body: JSON.stringify(data) }); }
-    static deletePaciente(id) { return this.request(`/pacientes/${id}`, { method: 'DELETE' }); }
-    static searchPacientesByNombre(nombre) { return this.request(`/pacientes/query?nombre=${encodeURIComponent(nombre)}`); }
+    static createPaciente(data) {
+        return this.request('/pacientes', { method: 'POST', body: JSON.stringify(data) });
+    }
+    static updatePaciente(id, data) {
+        return this.request(`/pacientes/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    }
+    static deletePaciente(id) {
+        return this.request(`/pacientes/${id}`, { method: 'DELETE' });
+    }
+    static searchPacientesByNombre(nombre) {
+        return this.request(`/pacientes/query?nombre=${encodeURIComponent(nombre)}`);
+    }
 }
 
 // Utilidades

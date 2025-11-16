@@ -2,6 +2,7 @@
 // CONFIGURACIÓN BASE
 // ===============================
 const URL_BASE = 'https://springbootpsicoclinic.onrender.com';
+//const API_BASE_URL = 'http://localhost:8080';
 
 // ===============================
 // SERVICIO DE CITAS
