@@ -1,7 +1,7 @@
 // Asegúrate de que tu backend esté corriendo en la URL y puerto correctos(HOST)
-const API_BASE_URL = "http://localhost:8080";
+//const API_BASE_URL = "http://localhost:8080";
 // BACKEND ONLINE
-//const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
+const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
 
 // ------------------------------------
 // 🔐 Authentication (JWT) — ARREGLADO
@@ -141,37 +141,7 @@ async function fetchProtectedData(endpoint, method = "GET", body = null) {
 // ------------------------------------
 // 📅 Calendar
 // ------------------------------------
-function generateCalendar() {
-  const calendarDays = document.getElementById("calendarDays");
-  if (!calendarDays) return;
-
-  const today = new Date();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-  const firstDay = new Date(currentYear, currentMonth, 1);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-  calendarDays.innerHTML = "";
-
-  for (let i = 0; i < 42; i++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() + i);
-
-    const dayElement = document.createElement("div");
-    dayElement.className = "calendar-day";
-    dayElement.textContent = currentDate.getDate();
-
-    if (currentDate.getMonth() !== currentMonth)
-      dayElement.style.opacity = "0.3";
-    if (currentDate.toDateString() === today.toDateString())
-      dayElement.classList.add("today");
-    if (Math.random() > 0.7) dayElement.classList.add("has-appointments");
-
-    calendarDays.appendChild(dayElement);
-  }
-}
-
+// El código del calendario se ha movido a calendar.js para mejor organización
 // ------------------------------------
 // 📊 Charts
 // ------------------------------------
