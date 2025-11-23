@@ -1,5 +1,16 @@
 //const API_BASE_URL = "http://localhost:8080";
 const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
+
+// ✅ Verificación de rol al cargar la página
+(function checkStaffAccess() {
+  const role = sessionStorage.getItem("role");
+  
+  if (role !== "ADMIN") {
+    alert("⛔ No tienes permisos para acceder a esta página.");
+    window.location.href = "dashboard.html";
+  }
+})();
+
 // API Service para Personal
 class PersonalService {
   static async request(url, options = {}) {
@@ -21,8 +32,16 @@ class PersonalService {
         ...options,
       });
 
-      if (!response.ok)
+      if (!response.ok) {
+        // ✅ Manejo especial para 403 Forbidden
+        if (response.status === 403) {
+          alert("⛔ No tienes permisos para realizar esta acción.");
+          window.location.href = "dashboard.html";
+          return;
+        }
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       if (response.status === 204 || !response.headers.get("content-type"))
         return null;
 
@@ -60,6 +79,7 @@ class PersonalService {
     return this.request(`/personal/query?nombre=${encodeURIComponent(nombre)}`);
   }
 }
+
 // Utilidades
 const iniciales = (p) => (p.nombre?.[0] || "") + (p.apellido?.[0] || "");
 

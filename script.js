@@ -8,8 +8,6 @@ const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
 // ------------------------------------
 
 async function login() {
-  // Verificar y decodificar JWT al cargar la página
-
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
 
@@ -22,7 +20,7 @@ async function login() {
 
     console.log("FETCH STATUS:", response.status, response.statusText);
 
-    const text = await response.text(); // Obtenemos como texto para ver qué devuelve
+    const text = await response.text();
     console.log("RESPONSE TEXT:", text);
 
     if (!response.ok) {
@@ -34,12 +32,12 @@ async function login() {
       return;
     }
 
-    const data = JSON.parse(text); // Parseamos solo si response.ok
+    const data = JSON.parse(text);
     console.log("LOGIN RESPONSE PARSEADO:", data);
 
     sessionStorage.setItem("username", data.username);
     sessionStorage.setItem("jwtToken", data.token);
-    sessionStorage.setItem("role", data.role);
+    sessionStorage.setItem("role", data.role); // ✅ Guardamos el rol
 
     window.location.href = "dashboard.html";
   } catch (error) {
@@ -54,7 +52,7 @@ function logout() {
 }
 
 // ------------------------------------
-// 🔒 Verifica sesión en páginas internas
+// 🔒 Verifica sesión y configura UI según rol
 // ------------------------------------
 function checkAuth() {
   const token = sessionStorage.getItem("jwtToken");
@@ -65,12 +63,19 @@ function checkAuth() {
     return;
   }
 
+  // Mostrar username en la UI
   const usernameDisplay = document.getElementById("usernameDisplay");
   if (usernameDisplay) {
     usernameDisplay.textContent = sessionStorage.getItem("username");
   }
 
-  // Mostrar JWT y payload en la página
+  // ✅ Configurar visibilidad del menú según rol
+  configureMenuByRole(role);
+
+  // ✅ Verificar acceso a página restringida
+  checkPageAccess(role);
+
+  // Mostrar JWT y payload en la página (si existe el elemento)
   if (token) {
     const payload = decodeJWT(token);
     const display = document.getElementById("jwtPayloadDisplay");
@@ -84,11 +89,59 @@ function checkAuth() {
   }
 }
 
+// ------------------------------------
+// 🎨 Configurar menú según rol
+// ------------------------------------
+function configureMenuByRole(role) {
+  console.log("Configurando menú para rol:", role);
+
+  // Ocultar la opción "Personal" si NO es ADMIN
+  const staffMenuItem = document.getElementById("staffMenuItem");
+  
+  if (staffMenuItem) {
+    if (role === "ADMIN") {
+      staffMenuItem.style.display = "block"; // Mostrar para ADMIN
+      console.log("✅ Menú Personal VISIBLE para ADMIN");
+    } else {
+      staffMenuItem.style.display = "none"; // Ocultar para otros roles
+      console.log("🚫 Menú Personal OCULTO para rol:", role);
+    }
+  }
+
+  // Puedes agregar más restricciones aquí según necesites
+  // Ejemplo: Ocultar "Reportes" para SOPORTE
+  // const reportsMenuItem = document.getElementById("reportsMenuItem");
+  // if (reportsMenuItem && role === "SOPORTE") {
+  //   reportsMenuItem.style.display = "none";
+  // }
+}
+
+// ------------------------------------
+// 🚪 Verificar acceso a páginas restringidas
+// ------------------------------------
+function checkPageAccess(role) {
+  const currentPage = window.location.pathname;
+  
+  // Si está en staff.html y NO es ADMIN, redirigir
+  if (currentPage.includes("staff.html") && role !== "ADMIN") {
+    alert("⛔ No tienes permisos para acceder a esta página.");
+    window.location.href = "dashboard.html";
+    return;
+  }
+
+  // Puedes agregar más validaciones de páginas aquí
+  // Ejemplo:
+  // if (currentPage.includes("reports.html") && role === "SOPORTE") {
+  //   alert("⛔ No tienes permisos para ver reportes.");
+  //   window.location.href = "dashboard.html";
+  // }
+}
+
 // Decodificar JWT
 function decodeJWT(token) {
   try {
-    const payloadBase64 = token.split(".")[1]; // Parte del medio
-    const decodedPayload = atob(payloadBase64); // Decodifica Base64
+    const payloadBase64 = token.split(".")[1];
+    const decodedPayload = atob(payloadBase64);
     const payloadObj = JSON.parse(decodedPayload);
     return payloadObj;
   } catch (e) {
@@ -139,17 +192,12 @@ async function fetchProtectedData(endpoint, method = "GET", body = null) {
 }
 
 // ------------------------------------
-// 📅 Calendar
-// ------------------------------------
-// El código del calendario se ha movido a calendar.js para mejor organización
-// ------------------------------------
 // 📊 Charts
 // ------------------------------------
 function initializeCharts() {
   const revenueChart = document.getElementById("revenueChart");
   if (!revenueChart) return;
 
-  // (Lógica de charts simplificada)
   const ctx = revenueChart.getContext("2d");
   ctx.fillStyle = "rgba(255, 153, 153, 0.3)";
   ctx.fillRect(0, 0, revenueChart.width, revenueChart.height);
@@ -190,10 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
   dateInputs.forEach((input) => {
     if (!input.value) input.value = today;
   });
-
-  // Llama a checkAuth al cargar páginas protegidas (dashboard.html, patients.html, etc.)
-  // Si esta línea no está presente en tus archivos HTML, debes llamarla manualmente.
-  // if (document.body.classList.contains('protected-page')) { checkAuth(); }
 });
 
 // Keyboard shortcuts
@@ -205,7 +249,6 @@ document.addEventListener("keydown", (e) => {
 
   if (e.key === "Escape") {
     const openModal = document.querySelector(".modal.show");
-    // Asumiendo que usas Bootstrap u otro framework con 'Modal'
     if (openModal) bootstrap.Modal.getInstance(openModal).hide();
   }
 });

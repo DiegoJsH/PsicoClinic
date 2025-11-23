@@ -359,10 +359,143 @@ async function viewCita(id) {
   }
 }
 
-// Editar cita (placeholder mejorado)
-function editCita(id) {
-  alert(`Función de edición para cita ${id} - Próximamente implementado`);
+async function editCita(id) {
+  try {
+    // Cargar combos primero
+    await cargarPacientes();
+    await cargarEspecialistas();
+
+    const cita = await CitasService.getCitaById(id);
+    console.log("Cita recibida:", cita);
+
+    document.getElementById("editCitaId").value = cita.id;
+    document.getElementById("editFecha").value = cita.fecha;
+    document.getElementById("editHora").value = cita.hora;
+    document.getElementById("editTipo").value = cita.tipoCita || "";
+    document.getElementById("editEstado").value = cita.estado;
+
+    // Seleccionar los actuales
+    if (cita.paciente) {
+      document.getElementById("editPaciente").value = cita.paciente.id;
+    }
+
+    if (cita.especialista) {
+      document.getElementById("editEspecialista").value = cita.especialista.id;
+    }
+
+    const modal = new bootstrap.Modal(
+      document.getElementById("editAppointmentModal")
+    );
+
+    modal.show();
+
+  } catch (error) {
+    console.error("Error al cargar la cita:", error);
+    alert("No se pudo obtener la cita");
+  }
 }
+
+async function cargarPacientes() {
+  const token = sessionStorage.getItem("jwtToken");
+  if (!token) {
+    alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/pacientes`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) throw new Error("Error al cargar pacientes");
+
+  const data = await response.json();
+
+  const select = document.getElementById("editPaciente");
+  if (!select) return;
+  select.innerHTML = `<option value="">Seleccione un paciente</option>`;
+
+  data.forEach((p) => {
+    select.innerHTML += `<option value="${p.id}">${p.nombre} ${p.apellido || ""}</option>`;
+  });
+}
+
+async function cargarEspecialistas() {
+  const token = sessionStorage.getItem("jwtToken");
+  if (!token) {
+    alert("Sesión expirada. Por favor, inicia sesión nuevamente.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  // usar el mismo endpoint que PersonalServiceCitas (/personal)
+  const response = await fetch(`${API_BASE_URL}/personal`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) throw new Error("Error al cargar especialistas");
+
+  const data = await response.json();
+
+  const select = document.getElementById("editEspecialista");
+  if (!select) return;
+  select.innerHTML = `<option value="">Seleccione un especialista</option>`;
+
+  data.forEach((e) => {
+    select.innerHTML += `<option value="${e.id}">${e.nombre} ${e.apellido || ""}</option>`;
+  });
+}
+
+async function guardarEdicionCita() {
+  try {
+    const id = parseInt(document.getElementById("editCitaId").value);
+    const fecha = document.getElementById("editFecha").value;
+    const hora = document.getElementById("editHora").value;
+    const tipoCita = document.getElementById("editTipo").value;
+    const estado = document.getElementById("editEstado").value;
+    const pacienteId = parseInt(document.getElementById("editPaciente").value);
+    const especialistaId = parseInt(document.getElementById("editEspecialista").value);
+
+    if (!pacienteId || !especialistaId || !fecha || !hora) {
+      return alert("Todos los campos son requeridos");
+    }
+
+    const citaActualizada = {
+      paciente: { id: pacienteId },
+      especialista: { id: especialistaId },
+      fecha: fecha,
+      hora: hora,
+      tipoCita: tipoCita || "Consulta General",
+      estado: estado,
+      notas: null
+    };
+
+    await CitasService.updateCita(id, citaActualizada);
+
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("editAppointmentModal")
+    );
+    if (modal) modal.hide();
+
+    loadCitas();
+    alert("Cita actualizada exitosamente");
+  } catch (error) {
+    console.error("Error al actualizar cita:", error);
+    alert("Error al actualizar la cita: " + error.message);
+  }
+}
+
+// Cargar al iniciar
+document.addEventListener("DOMContentLoaded", () => {
+  loadCitas();
+  cargarDatosModal();
+});
 
 // Búsqueda simple (sin filtros complejos)
 let searchTimeout;
