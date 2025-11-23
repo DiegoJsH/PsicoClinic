@@ -1,6 +1,16 @@
 // ===============================
 // SERVICIOS API
 // ===============================
+// ✅ Verificación de rol al cargar la página
+function checkReportsAccess() {
+  const role = sessionStorage.getItem("role");
+
+  if (role !== "ADMIN") {
+    alert("⛔ No tienes permisos para acceder a esta página.");
+    window.location.href = "dashboard.html";
+  }
+}
+
 class ServicioCitas {
   static async obtenerTodas() {
     const token = sessionStorage.getItem("jwtToken");
@@ -268,5 +278,6 @@ function generarTablaResumen(citas) {
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   checkAuth();
+  checkReportsAccess();
   cargarReporte();
 });
