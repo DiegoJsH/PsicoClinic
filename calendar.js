@@ -280,10 +280,6 @@ function initCalendarControls() {
  */
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Inicializando calendario...");
-
-  // Esperar un momento para asegurar que script.js está cargado
-  setTimeout(() => {
-    initCalendarControls();
-    generateCalendar();
-  }, 100);
+  initCalendarControls();
+  generateCalendar();
 });

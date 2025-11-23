@@ -1,7 +1,3 @@
-// API Configuration
-//const API_BASE_URL = "http://localhost:8080";
-const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
-
 // API Service para Citas
 class CitasService {
   static async request(url, options = {}) {
@@ -129,20 +125,25 @@ const calcularEstadisticas = (citas) => {
 
 // Variables globales
 let todasLasCitas = [];
+let pacientesCache = null;
+let personalCache = null;
 
-// Cargar datos para los selects del modal
+// Cargar datos para los selects del modal (con cache)
 async function cargarDatosModal() {
   try {
-    const [pacientes, personal] = await Promise.all([
-      PacienteServiceCitas.getAllPacientes(),
-      PersonalServiceCitas.getAllPersonal(),
-    ]);
+    // Solo cargar si no están en cache
+    if (!pacientesCache || !personalCache) {
+      [pacientesCache, personalCache] = await Promise.all([
+        PacienteServiceCitas.getAllPacientes(),
+        PersonalServiceCitas.getAllPersonal(),
+      ]);
+    }
 
     const pacienteSelect = document.getElementById("patientSelect");
     if (pacienteSelect) {
       pacienteSelect.innerHTML =
         '<option value="">Seleccionar paciente...</option>' +
-        pacientes
+        pacientesCache
           .map(
             (p) =>
               `<option value="${p.id}">${p.nombre} ${p.apellido} (ID: ${p.id})</option>`
@@ -154,7 +155,7 @@ async function cargarDatosModal() {
     if (doctorSelect) {
       doctorSelect.innerHTML =
         '<option value="">Seleccionar especialista...</option>' +
-        personal
+        personalCache
           .map(
             (p) =>
               `<option value="${p.id}">${p.nombre} ${p.apellido} - ${
@@ -388,7 +389,6 @@ async function editCita(id) {
     );
 
     modal.show();
-
   } catch (error) {
     console.error("Error al cargar la cita:", error);
     alert("No se pudo obtener la cita");
@@ -419,7 +419,9 @@ async function cargarPacientes() {
   select.innerHTML = `<option value="">Seleccione un paciente</option>`;
 
   data.forEach((p) => {
-    select.innerHTML += `<option value="${p.id}">${p.nombre} ${p.apellido || ""}</option>`;
+    select.innerHTML += `<option value="${p.id}">${p.nombre} ${
+      p.apellido || ""
+    }</option>`;
   });
 }
 
@@ -448,7 +450,9 @@ async function cargarEspecialistas() {
   select.innerHTML = `<option value="">Seleccione un especialista</option>`;
 
   data.forEach((e) => {
-    select.innerHTML += `<option value="${e.id}">${e.nombre} ${e.apellido || ""}</option>`;
+    select.innerHTML += `<option value="${e.id}">${e.nombre} ${
+      e.apellido || ""
+    }</option>`;
   });
 }
 
@@ -460,7 +464,9 @@ async function guardarEdicionCita() {
     const tipoCita = document.getElementById("editTipo").value;
     const estado = document.getElementById("editEstado").value;
     const pacienteId = parseInt(document.getElementById("editPaciente").value);
-    const especialistaId = parseInt(document.getElementById("editEspecialista").value);
+    const especialistaId = parseInt(
+      document.getElementById("editEspecialista").value
+    );
 
     if (!pacienteId || !especialistaId || !fecha || !hora) {
       return alert("Todos los campos son requeridos");
@@ -473,7 +479,7 @@ async function guardarEdicionCita() {
       hora: hora,
       tipoCita: tipoCita || "Consulta General",
       estado: estado,
-      notas: null
+      notas: null,
     };
 
     await CitasService.updateCita(id, citaActualizada);

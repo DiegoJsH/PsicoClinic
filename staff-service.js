@@ -1,15 +1,12 @@
-//const API_BASE_URL = "http://localhost:8080";
-const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
-
 // ✅ Verificación de rol al cargar la página
-(function checkStaffAccess() {
+function checkStaffAccess() {
   const role = sessionStorage.getItem("role");
-  
+
   if (role !== "ADMIN") {
     alert("⛔ No tienes permisos para acceder a esta página.");
     window.location.href = "dashboard.html";
   }
-})();
+}
 
 // API Service para Personal
 class PersonalService {

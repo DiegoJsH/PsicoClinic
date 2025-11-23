@@ -4,7 +4,7 @@
 const API_BASE_URL = "https://springbootpsicoclinic.onrender.com";
 
 // ------------------------------------
-// 🔐 Authentication (JWT) — ARREGLADO
+// Authentication (JWT)
 // ------------------------------------
 
 async function login() {
@@ -37,7 +37,7 @@ async function login() {
 
     sessionStorage.setItem("username", data.username);
     sessionStorage.setItem("jwtToken", data.token);
-    sessionStorage.setItem("role", data.role); // ✅ Guardamos el rol
+    sessionStorage.setItem("role", data.role); // Guardamos el rol
 
     window.location.href = "dashboard.html";
   } catch (error) {
@@ -52,7 +52,7 @@ function logout() {
 }
 
 // ------------------------------------
-// 🔒 Verifica sesión y configura UI según rol
+// Verifica sesión y configura UI según rol
 // ------------------------------------
 function checkAuth() {
   const token = sessionStorage.getItem("jwtToken");
@@ -63,16 +63,16 @@ function checkAuth() {
     return;
   }
 
-  // Mostrar username en la UI
-  const usernameDisplay = document.getElementById("usernameDisplay");
-  if (usernameDisplay) {
-    usernameDisplay.textContent = sessionStorage.getItem("username");
+  // Mostrar rol en la UI
+  const userDisplay = document.getElementById("userDisplay");
+  if (userDisplay && role) {
+    userDisplay.textContent = role;
   }
 
-  // ✅ Configurar visibilidad del menú según rol
+  // Configurar visibilidad del menú según rol
   configureMenuByRole(role);
 
-  // ✅ Verificar acceso a página restringida
+  // Verificar acceso a página restringida
   checkPageAccess(role);
 
   // Mostrar JWT y payload en la página (si existe el elemento)
@@ -90,14 +90,14 @@ function checkAuth() {
 }
 
 // ------------------------------------
-// 🎨 Configurar menú según rol
+// Configurar menú según rol
 // ------------------------------------
 function configureMenuByRole(role) {
   console.log("Configurando menú para rol:", role);
 
   // Ocultar la opción "Personal" si NO es ADMIN
   const staffMenuItem = document.getElementById("staffMenuItem");
-  
+
   if (staffMenuItem) {
     if (role === "ADMIN") {
       staffMenuItem.style.display = "block"; // Mostrar para ADMIN
@@ -121,7 +121,7 @@ function configureMenuByRole(role) {
 // ------------------------------------
 function checkPageAccess(role) {
   const currentPage = window.location.pathname;
-  
+
   // Si está en staff.html y NO es ADMIN, redirigir
   if (currentPage.includes("staff.html") && role !== "ADMIN") {
     alert("⛔ No tienes permisos para acceder a esta página.");
@@ -192,7 +192,7 @@ async function fetchProtectedData(endpoint, method = "GET", body = null) {
 }
 
 // ------------------------------------
-// 📊 Charts
+// Charts
 // ------------------------------------
 function initializeCharts() {
   const revenueChart = document.getElementById("revenueChart");
@@ -229,7 +229,7 @@ function initializeCharts() {
 }
 
 // ------------------------------------
-// ✨ Initialize on load & Shortcuts
+// Initialize on load & Shortcuts
 // ------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   // Configura la fecha actual en inputs de tipo date

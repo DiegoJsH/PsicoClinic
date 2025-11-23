@@ -1,16 +1,12 @@
 // ===============================
-// CONFIGURACIÓN BASE
-// ===============================
-//const URL_BASE = "http://localhost:8080";
-const URL_BASE = "https://springbootpsicoclinic.onrender.com";
-
-// ===============================
 // SERVICIOS API
 // ===============================
+let citasCache = null; // Cache para evitar peticiones duplicadas
+
 class ServicioCitas {
   static async obtenerTodas() {
     const token = sessionStorage.getItem("jwtToken");
-    const respuesta = await fetch(`${URL_BASE}/citas`, {
+    const respuesta = await fetch(`${API_BASE_URL}/citas`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -24,7 +20,7 @@ class ServicioCitas {
 class ServicioPacientes {
   static async obtenerTodos() {
     const token = sessionStorage.getItem("jwtToken");
-    const respuesta = await fetch(`${URL_BASE}/pacientes`, {
+    const respuesta = await fetch(`${API_BASE_URL}/pacientes`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -38,7 +34,7 @@ class ServicioPacientes {
 class ServicioPersonal {
   static async obtenerTodos() {
     const token = sessionStorage.getItem("jwtToken");
-    const respuesta = await fetch(`${URL_BASE}/personal`, {
+    const respuesta = await fetch(`${API_BASE_URL}/personal`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -86,11 +82,11 @@ async function cargarTotalPersonal() {
 // Mostrar el total de citas y las próximas citas
 async function cargarCitas() {
   try {
-    const citas = await ServicioCitas.obtenerTodas();
+    citasCache = await ServicioCitas.obtenerTodas();
     const elementoTotal = document.getElementById("totalCitasdash");
-    if (elementoTotal) elementoTotal.textContent = citas.length;
+    if (elementoTotal) elementoTotal.textContent = citasCache.length;
 
-    mostrarProximasCitas(citas);
+    mostrarProximasCitas(citasCache);
     agregarActividad("Citas cargadas correctamente");
   } catch (error) {
     console.error("Error al cargar citas:", error);
@@ -204,7 +200,8 @@ function agregarActividad(texto) {
 // ===============================
 async function calcularIngresosMes() {
   try {
-    const citas = await ServicioCitas.obtenerTodas();
+    // Usar citas del cache en lugar de hacer otra petición
+    const citas = citasCache || (await ServicioCitas.obtenerTodas());
 
     // Precio fijo por cita (puedes cambiarlo si deseas)
     const precioPorCita = 50;
@@ -236,9 +233,13 @@ async function calcularIngresosMes() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  cargarTotalPacientes();
-  cargarTotalPersonal();
-  cargarCitas();
-  calcularIngresosMes();
+document.addEventListener("DOMContentLoaded", async () => {
+  checkAuth();
+  // Ejecutar todas las peticiones en paralelo para mejor rendimiento
+  await Promise.all([
+    cargarTotalPacientes(),
+    cargarTotalPersonal(),
+    cargarCitas(),
+    calcularIngresosMes(),
+  ]);
 });
